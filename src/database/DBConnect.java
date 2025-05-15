@@ -6,7 +6,7 @@ public class DBConnect {
     private static final String USERNAME = "root";
     private static final String PASSWORD = "123456";
 
-    public static Connection connect() {
+    public static Connection getConnection() {
         try {
             System.out.println("⏳ Đang kết nối đến MySQL...");
             Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);

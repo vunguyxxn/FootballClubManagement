@@ -1,142 +1,126 @@
 package dao;
 
 import database.DBConnect;
-import model.Member;
-
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import model.Member;
 
 public class MemberDAO {
 
-    public List<Member> getAllMembers() {
+   public List<Member> getAllMembers() {
         List<Member> list = new ArrayList<>();
-        String sql = "SELECT * FROM members";
-
-        try (Connection conn = DBConnect.connect();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try {
+            Connection conn = DBConnect.getConnection();
+            String sql = "SELECT member_id, name, birth_date, nationality, position, role, phone, email, join_date, contract_status FROM members";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                Member m = new Member();
-                m.setMemberId(rs.getInt("member_id"));
-                m.setName(rs.getString("name"));
-                m.setBirthDate(rs.getString("birth_date"));
-                m.setNationality(rs.getString("nationality"));
-                m.setPosition(rs.getString("position"));
-                m.setRole(rs.getString("role"));
-                m.setPhone(rs.getString("phone"));
-                m.setEmail(rs.getString("email"));
-                m.setContractStatus(rs.getString("contract_status"));
-                m.setJerseyNumber(rs.getInt("jersey_number"));
-                m.setSalary(rs.getDouble("salary"));
-                m.setUserId(rs.getInt("user_id"));
-                list.add(m);
+                Member member = new Member(
+                    rs.getInt("member_id"),  // <-- Lấy ID từ SQL
+                    rs.getString("name"),
+                    rs.getString("birth_date"),
+                    rs.getString("nationality"),
+                    rs.getString("position"),
+                    rs.getString("role"),
+                    rs.getString("phone"),
+                    rs.getString("email"),
+                    rs.getString("join_date"),                    
+                    rs.getString("contract_status")
+                    
+                );
+                list.add(member);
             }
 
+            rs.close();
+            stmt.close();
+            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return list;
     }
+         public boolean addMember(Member member) throws SQLException {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    boolean success = false;
 
-    public boolean addMember(Member m) {
-        String sql = "INSERT INTO members (name, birth_date, nationality, position, role, phone, email, contract_status, jersey_number, salary, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnect.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
+        conn = DBConnect.getConnection();
+        String sql = "INSERT INTO footballclubmanagement.members (name, birth_date, nationality, " +
+                "position, role, phone, email, join_date, contract_status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            ps.setString(1, m.getName());
-            ps.setString(2, m.getBirthDate());
-            ps.setString(3, m.getNationality());
-            ps.setString(4, m.getPosition());
-            ps.setString(5, m.getRole());
-            ps.setString(6, m.getPhone());
-            ps.setString(7, m.getEmail());
-            ps.setString(8, m.getContractStatus());
-            ps.setInt(9, m.getJerseyNumber());
-            ps.setDouble(10, m.getSalary());
-            ps.setInt(11, m.getUserId());
+        stmt = conn.prepareStatement(sql);
+        stmt.setString(1, member.getName());
+        stmt.setString(2, member.getBirthDate());
+        stmt.setString(3, member.getNationality());
+        stmt.setString(4, member.getPosition());
+        stmt.setString(5, member.getRole());
+        stmt.setString(6, member.getPhone());
+        stmt.setString(7, member.getEmail());
+        stmt.setString(8, member.getJoinDate());
+        stmt.setString(9, member.getContractStatus());  // contract_status là tham số thứ 9
+        
 
-            return ps.executeUpdate() > 0;
 
+        int rowsAffected = stmt.executeUpdate();
+        success = (rowsAffected > 0);
+    } finally {
+        if (stmt != null) stmt.close();
+        if (conn != null) conn.close();
+    }
+
+    return success;
+}
+      public boolean deleteMember(int memberId) {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    try {
+        conn = DBConnect.getConnection();
+        // Thay 'id' bằng 'member_id' trong câu lệnh SQL
+        String sql = "DELETE FROM members WHERE member_id = ?";
+        stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, memberId);
+        int rowsAffected = stmt.executeUpdate();
+        return rowsAffected > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    } finally {
+        try {
+            if (stmt != null) stmt.close();
+            if (conn != null) conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+}
+     public boolean updateMember(Member members) {
+    String sql = "UPDATE members SET name = ?, birth_date = ?, nationality = ?, position = ?, role = ?, phone = ?, email = ?, join_date = ?, contract_status = ? WHERE member_id = ?";
+    
+    try (Connection conn = DBConnect.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, members.getName());
+        stmt.setString(2, members.getBirthDate());
+        stmt.setString(3, members.getNationality());
+        stmt.setString(4, members.getPosition());
+        stmt.setString(5, members.getRole());
+        stmt.setString(6, members.getPhone());
+        stmt.setString(7, members.getEmail());
+        stmt.setString(8, members.getJoinDate());
+        stmt.setString(9, members.getContractStatus());
+        stmt.setInt(10, members.getMemberId());
+        
+        return stmt.executeUpdate() > 0;
+        
+    } catch (SQLException e) {
+        e.printStackTrace();
         return false;
     }
+}
 
-    public boolean updateMember(Member m) {
-        String sql = "UPDATE members SET name=?, birth_date=?, nationality=?, position=?, role=?, phone=?, email=?, contract_status=?, jersey_number=?, salary=?, user_id=? WHERE member_id=?";
-        try (Connection conn = DBConnect.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, m.getName());
-            ps.setString(2, m.getBirthDate());
-            ps.setString(3, m.getNationality());
-            ps.setString(4, m.getPosition());
-            ps.setString(5, m.getRole());
-            ps.setString(6, m.getPhone());
-            ps.setString(7, m.getEmail());
-            ps.setString(8, m.getContractStatus());
-            ps.setInt(9, m.getJerseyNumber());
-            ps.setDouble(10, m.getSalary());
-            ps.setInt(11, m.getUserId());
-            ps.setInt(12, m.getMemberId());
 
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean deleteMember(int id) {
-        String sql = "DELETE FROM members WHERE member_id=?";
-        try (Connection conn = DBConnect.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public List<Member> searchMembers(String keyword) {
-        List<Member> list = new ArrayList<>();
-        String sql = "SELECT * FROM members WHERE name LIKE ? OR position LIKE ? OR nationality LIKE ?";
-        try (Connection conn = DBConnect.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            String pattern = "%" + keyword + "%";
-            ps.setString(1, pattern);
-            ps.setString(2, pattern);
-            ps.setString(3, pattern);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Member m = new Member();
-                m.setMemberId(rs.getInt("member_id"));
-                m.setName(rs.getString("name"));
-                m.setBirthDate(rs.getString("birth_date"));
-                m.setNationality(rs.getString("nationality"));
-                m.setPosition(rs.getString("position"));
-                m.setRole(rs.getString("role"));
-                m.setPhone(rs.getString("phone"));
-                m.setEmail(rs.getString("email"));
-                m.setContractStatus(rs.getString("contract_status"));
-                m.setJerseyNumber(rs.getInt("jersey_number"));
-                m.setSalary(rs.getDouble("salary"));
-                m.setUserId(rs.getInt("user_id"));
-                list.add(m);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 }

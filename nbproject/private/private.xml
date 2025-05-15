@@ -3,9 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/DACS1/FootballClubManagement/src/dao/MemberDAO.java</file>
             <file>file:/D:/DACS1/FootballClubManagement/src/view/MainForm.java</file>
-            <file>file:/D:/DACS1/FootballClubManagement/src/view/ClubMemberForm.java</file>
+            <file>file:/D:/DACS1/FootballClubManagement/src/view/ClubMember.java</file>
+            <file>file:/D:/DACS1/FootballClubManagement/src/view/AddMemberForm.java</file>
             <file>file:/D:/DACS1/FootballClubManagement/src/view/login.java</file>
+            <file>file:/D:/DACS1/FootballClubManagement/src/model/Member.java</file>
         </group>
     </open-files>
 </project-private>
